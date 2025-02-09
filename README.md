@@ -3,9 +3,9 @@ MYSELF VIVISHA CATHERIN, I HAVE DEVELOPED THE GIVEN CAPSTONE PROJECT-1
 
 CUSTOMER CHURN PREDICTION
 
-EXPLANATION:
+
 📌 Customer Churn Prediction – Code Explanation
-Your code is a Customer Churn Prediction Model that follows key Machine Learning steps: Data Preprocessing, Model Training, Evaluation, and Interpretability.
+my code is a Customer Churn Prediction Model that follows key Machine Learning steps: Data Preprocessing, Model Training, Evaluation, and Interpretability.
 
 1️⃣ Importing Necessary Libraries
 python
