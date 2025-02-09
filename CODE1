@@ -1,0 +1,73 @@
+CUSTOMER CHURN PREDICTION
+
+# Importing necessary libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from xgboost import XGBClassifier
+
+from sklearn.metrics import accuracy_score, precision_score, recall_score, roc_auc_score, confusion_matrix
+import shap
+
+# Load the dataset
+df = pd.read_csv("Telco-Customer-Churn.csv")
+
+# Display the first few rows
+print(df.head())
+
+# Drop unnecessary columns (e.g., customer ID if present)
+df.drop(columns=["customerID"], inplace=True, errors="ignore")
+
+# Convert categorical variables into numerical
+categorical_cols = df.select_dtypes(include=['object']).columns
+
+for col in categorical_cols:
+    if df[col].nunique() == 2:  # Binary columns
+        df[col] = LabelEncoder().fit_transform(df[col])
+    else:  # One-hot encoding for multi-category columns
+        df = pd.get_dummies(df, columns=[col], drop_first=True)
+
+# Fill missing values if any
+df.fillna(df.median(), inplace=True)
+
+# Splitting dataset
+X = df.drop(columns=["Churn"])  # Features
+y = df["Churn"]  # Target variable
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+# Standardize numerical features
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Model Training and Evaluation
+models = {
+    "Logistic Regression": LogisticRegression(),
+    "Random Forest": RandomForestClassifier(n_estimators=100, random_state=42),
+    "XGBoost": XGBClassifier(use_label_encoder=False, eval_metric="logloss")
+}
+
+for name, model in models.items():
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+
+    print(f"\nModel: {name}")
+    print(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")
+    print(f"Precision: {precision_score(y_test, y_pred):.4f}")
+    print(f"Recall: {recall_score(y_test, y_pred):.4f}")
+    print(f"ROC AUC: {roc_auc_score(y_test, y_pred):.4f}")
+    print("Confusion Matrix:")
+    print(confusion_matrix(y_test, y_pred))
+
+# Feature Importance with SHAP (for XGBoost)
+explainer = shap.Explainer(models["XGBoost"])
+shap_values = explainer(X_test)
+
+shap.summary_plot(shap_values, X_test)
